@@ -1,0 +1,276 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  role          Role      @default(CLIENT)
+  password      String?
+  accounts      Account[]
+  sessions      Session[]
+  enquiries     Enquiry[]
+  bookings      Booking[]
+  invoices      Invoice[]
+  orders        Order[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  STAFF
+  CLIENT
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Enquiry {
+  id         String        @id @default(cuid())
+  name       String
+  email      String
+  phone      String?
+  eventType  String
+  eventDate  DateTime?
+  guestCount Int?
+  budget     String?
+  message    String        @db.Text
+  status     EnquiryStatus @default(NEW)
+  notes      String?       @db.Text
+  userId     String?
+  user       User?         @relation(fields: [userId], references: [id])
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+}
+
+enum EnquiryStatus {
+  NEW
+  IN_REVIEW
+  QUOTED
+  BOOKED
+  CLOSED
+  SPAM
+}
+
+model Booking {
+  id        String        @id @default(cuid())
+  title     String
+  eventDate DateTime
+  eventType String
+  venue     String?
+  status    BookingStatus @default(PENDING)
+  notes     String?       @db.Text
+  userId    String?
+  user      User?         @relation(fields: [userId], references: [id])
+  invoices  Invoice[]
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+model Invoice {
+  id        String        @id @default(cuid())
+  number    String        @unique
+  amount    Float
+  status    InvoiceStatus @default(DRAFT)
+  dueDate   DateTime?
+  paidAt    DateTime?
+  lineItems Json
+  userId    String?
+  user      User?         @relation(fields: [userId], references: [id])
+  bookingId String?
+  booking   Booking?      @relation(fields: [bookingId], references: [id])
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+}
+
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  PAID
+  OVERDUE
+  CANCELLED
+}
+
+model GalleryItem {
+  id           String   @id @default(cuid())
+  title        String
+  category     String
+  imageUrl     String
+  cloudinaryId String?
+  featured     Boolean  @default(false)
+  order        Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model BlogPost {
+  id         String   @id @default(cuid())
+  title      String
+  slug       String   @unique
+  excerpt    String?  @db.Text
+  content    String   @db.Text
+  coverImage String?
+  published  Boolean  @default(false)
+  featured   Boolean  @default(false)
+  tags       String[]
+  metaTitle  String?
+  metaDesc   String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Testimonial {
+  id        String   @id @default(cuid())
+  name      String
+  role      String?
+  content   String   @db.Text
+  rating    Int      @default(5)
+  imageUrl  String?
+  videoUrl  String?
+  approved  Boolean  @default(false)
+  featured  Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model NewsletterSubscriber {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+model SiteSettings {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String   @db.Text
+  updatedAt DateTime @updatedAt
+}
+
+// Phase 2: eCommerce
+
+model Product {
+  id          String      @id @default(cuid())
+  name        String
+  slug        String      @unique
+  description String?     @db.Text
+  price       Float
+  images      String[]
+  category    String
+  inStock     Boolean     @default(true)
+  featured    Boolean     @default(false)
+  orderItems  OrderItem[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model Event {
+  id          String      @id @default(cuid())
+  title       String
+  slug        String      @unique
+  description String?     @db.Text
+  date        DateTime
+  venue       String
+  capacity    Int
+  ticketPrice Float
+  coverImage  String?
+  published   Boolean     @default(false)
+  tickets     Ticket[]
+  orderItems  OrderItem[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model Ticket {
+  id        String    @id @default(cuid())
+  qrCode    String    @unique
+  used      Boolean   @default(false)
+  usedAt    DateTime?
+  eventId   String
+  event     Event     @relation(fields: [eventId], references: [id])
+  orderId   String
+  order     Order     @relation(fields: [orderId], references: [id])
+  createdAt DateTime  @default(now())
+}
+
+model Order {
+  id        String      @id @default(cuid())
+  total     Float
+  status    OrderStatus @default(PENDING)
+  stripeId  String?
+  userId    String?
+  user      User?       @relation(fields: [userId], references: [id])
+  items     OrderItem[]
+  tickets   Ticket[]
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  FULFILLED
+  CANCELLED
+  REFUNDED
+}
+
+model OrderItem {
+  id        String   @id @default(cuid())
+  quantity  Int
+  price     Float
+  productId String?
+  product   Product? @relation(fields: [productId], references: [id])
+  eventId   String?
+  event     Event?   @relation(fields: [eventId], references: [id])
+  orderId   String
+  order     Order    @relation(fields: [orderId], references: [id])
+}

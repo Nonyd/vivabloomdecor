@@ -3,25 +3,111 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --font-accent: var(--font-italiana);
+  --ivory: #f8f5ee;
+  --ivory-dark: #ede8dc;
+  --onyx: #0f0e0c;
+  --onyx-mid: #1c1b18;
+  --onyx-soft: #2c2b26;
+  --champagne: #c9a96e;
+  --champagne-lt: #e8d5b0;
+  --sage: #7a8c76;
+  --blush: #e8c5b8;
+  --charcoal: #4a4843;
+  --white: #ffffff;
+
+  --font-display: "Cormorant Garamond", Georgia, serif;
+  --font-body: "DM Sans", system-ui, sans-serif;
+  --font-accent: "Italiana", Georgia, serif;
+
+  --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  html {
+    @apply scroll-smooth;
   }
-}
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  body {
+    @apply font-body text-charcoal antialiased;
+    background-color: var(--ivory);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-display text-onyx;
+  }
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
   }
+
+  .eyebrow {
+    font-family: var(--font-body);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.35em;
+    color: #c9a96e;
+    display: block;
+  }
+
+  .eyebrow-light {
+    font-family: var(--font-body);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.35em;
+    color: #c9a96e;
+    display: block;
+  }
+}
+
+.champagne-outline-btn {
+  border: 1px solid #c9a96e;
+  color: #c9a96e;
+  font-family: var(--font-body);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  padding: 14px 36px;
+  border-radius: 9999px;
+  display: inline-block;
+  transition: all 0.3s ease;
+}
+
+.champagne-outline-btn:hover {
+  background: #c9a96e;
+  color: #0f0e0c;
+}
+
+@keyframes scrollLine {
+  0%,
+  100% {
+    transform: scaleY(0);
+    transform-origin: top;
+  }
+  50% {
+    transform: scaleY(1);
+    transform-origin: top;
+  }
+}
+
+.hero-headline-text {
+  font-size: clamp(48px, 10vw, 112px);
+  line-height: 0.92;
+}
+
+.brand-quote {
+  font-size: clamp(28px, 7vw, 52px);
+}
+
+/* Minimum touch targets for iOS/Android — exempt prose links via inline styles where needed */
+button,
+a[role="button"],
+[role="button"] {
+  min-height: 44px;
 }
