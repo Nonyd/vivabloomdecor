@@ -1,9 +1,10 @@
-import type { Enquiry } from "@prisma/client";
+import type { Enquiry, Event, Order, Ticket } from "@prisma/client";
 import { render } from "@react-email/render";
 import { Resend } from "resend";
 import { AdminNotificationEmail } from "@/lib/emails/admin-notification";
 import { EnquiryConfirmationEmail } from "@/lib/emails/enquiry-confirmation";
 import { InvoiceEmail } from "@/lib/emails/invoice-email";
+import { TicketEmail } from "@/lib/emails/ticket-email";
 import type { InvoiceLineRow } from "@/lib/invoice-line-items";
 
 const resendApiKey = process.env.RESEND_API_KEY;
@@ -104,6 +105,30 @@ export async function sendTestEmail(to: string) {
     html: "<p>This is a test message from your Vivabloom admin settings.</p>",
   });
   return { ok: true as const };
+}
+
+export async function sendTicketEmail(opts: {
+  to: string;
+  name: string;
+  event: Event;
+  tickets: Ticket[];
+  order: Order;
+}) {
+  if (!resend) return;
+  const html = await render(
+    TicketEmail({
+      name: opts.name,
+      event: opts.event,
+      tickets: opts.tickets,
+      order: opts.order,
+    })
+  );
+  await resend.emails.send({
+    from: fromEmail,
+    to: opts.to,
+    subject: `Your tickets for ${opts.event.title} — Vivabloom`,
+    html,
+  });
 }
 
 export async function sendUserInviteEmail(to: string, tempPassword: string) {

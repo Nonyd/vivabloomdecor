@@ -197,6 +197,18 @@ model SiteSettings {
   updatedAt DateTime @updatedAt
 }
 
+model PageContent {
+  id        String   @id @default(cuid())
+  page      String
+  section   String
+  key       String
+  value     String   @db.Text
+  updatedAt DateTime @updatedAt
+
+  @@unique([page, section, key])
+  @@index([page])
+}
+
 // Phase 2: eCommerce
 
 model Product {
@@ -215,45 +227,76 @@ model Product {
 }
 
 model Event {
-  id          String      @id @default(cuid())
-  title       String
-  slug        String      @unique
-  description String?     @db.Text
-  date        DateTime
-  venue       String
-  capacity    Int
-  ticketPrice Float
-  coverImage  String?
-  published   Boolean     @default(false)
-  tickets     Ticket[]
-  orderItems  OrderItem[]
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  id             String      @id @default(cuid())
+  title          String
+  slug           String      @unique
+  description    String?     @db.Text
+  date           DateTime
+  endDate        DateTime?
+  venue          String
+  venueAddress   String?
+  city           String      @default("Melbourne")
+  capacity       Int
+  ticketsSold    Int         @default(0)
+  ticketPrice    Float
+  earlyBirdPrice Float?
+  earlyBirdEnds  DateTime?
+  isFree         Boolean     @default(false)
+  coverImage     String?
+  gallery        String[]
+  tags           String[]
+  published      Boolean     @default(false)
+  featured       Boolean     @default(false)
+  status         EventStatus @default(UPCOMING)
+  tickets        Ticket[]
+  orderItems     OrderItem[]
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+}
+
+enum EventStatus {
+  UPCOMING
+  ONGOING
+  COMPLETED
+  CANCELLED
 }
 
 model Ticket {
-  id        String    @id @default(cuid())
-  qrCode    String    @unique
-  used      Boolean   @default(false)
-  usedAt    DateTime?
-  eventId   String
-  event     Event     @relation(fields: [eventId], references: [id])
-  orderId   String
-  order     Order     @relation(fields: [orderId], references: [id])
-  createdAt DateTime  @default(now())
+  id             String    @id @default(cuid())
+  ticketNumber   String    @unique
+  qrCode         String    @unique
+  qrCodeImage    String?   @db.Text
+  used           Boolean   @default(false)
+  usedAt         DateTime?
+  checkedInBy    String?
+  eventId        String
+  event          Event     @relation(fields: [eventId], references: [id])
+  orderId        String
+  order          Order     @relation(fields: [orderId], references: [id])
+  attendeeName   String?
+  attendeeEmail  String?
+  seatNumber     String?
+  createdAt      DateTime  @default(now())
 }
 
 model Order {
-  id        String      @id @default(cuid())
-  total     Float
-  status    OrderStatus @default(PENDING)
-  stripeId  String?
-  userId    String?
-  user      User?       @relation(fields: [userId], references: [id])
-  items     OrderItem[]
-  tickets   Ticket[]
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
+  id              String      @id @default(cuid())
+  orderNumber     String      @unique
+  total             Float
+  status            OrderStatus @default(PENDING)
+  paymentProvider   String?
+  stripeSessionId   String?     @unique
+  stripePaymentId   String?
+  paypalOrderId     String?     @unique
+  customerName      String
+  customerEmail     String
+  customerPhone     String?
+  userId            String?
+  user              User?       @relation(fields: [userId], references: [id])
+  items             OrderItem[]
+  tickets           Ticket[]
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
 }
 
 enum OrderStatus {

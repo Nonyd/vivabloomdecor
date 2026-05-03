@@ -5,10 +5,28 @@ import Image from "next/image";
 import Link from "next/link";
 import { gsap, prefersReducedMotion } from "@/lib/gsap";
 
-const HERO_IMAGE =
+const DEFAULT_IMAGE =
   "https://images.unsplash.com/photo-1519741497674-611481863552?w=1920&q=80";
 
-export default function HeroSection() {
+export type HeroSectionProps = {
+  eyebrow?: string;
+  headline1?: string;
+  headline2?: string;
+  subheadline?: string;
+  ctaPrimary?: string;
+  ctaSecondary?: string;
+  image?: string;
+};
+
+export default function HeroSection({
+  eyebrow = "Australia's Premier Event Décor Studio",
+  headline1 = "Crafting Moments",
+  headline2 = "of Exquisite Beauty",
+  subheadline = "From intimate gatherings to grand celebrations — we design unforgettable experiences that tell your story.",
+  ctaPrimary = "Explore Our Work",
+  ctaSecondary = "Request a Quote",
+  image = DEFAULT_IMAGE,
+}: HeroSectionProps) {
   const heroRef = useRef<HTMLElement>(null);
   const heroImageRef = useRef<HTMLDivElement>(null);
 
@@ -80,7 +98,7 @@ export default function HeroSection() {
     >
       <div ref={heroImageRef} className="absolute inset-0">
         <Image
-          src={HERO_IMAGE}
+          src={image || DEFAULT_IMAGE}
           alt="Luxury event décor by Vivabloom"
           fill
           priority
@@ -103,15 +121,15 @@ export default function HeroSection() {
           className="hero-eyebrow mb-6 font-body text-[11px] uppercase tracking-[0.35em] text-[#C9A96E]"
           style={{ opacity: 0 }}
         >
-          Australia&apos;s Premier Event Décor Studio
+          {eyebrow}
         </p>
 
         <h1 className="hero-headline-text font-display font-medium italic leading-[0.92] text-white">
           <span className="hero-headline block" style={{ opacity: 0 }}>
-            Crafting Moments
+            {headline1}
           </span>
           <span className="hero-headline block text-[#E8D5B0]" style={{ opacity: 0 }}>
-            of Exquisite Beauty
+            {headline2}
           </span>
         </h1>
 
@@ -119,8 +137,7 @@ export default function HeroSection() {
           className="hero-sub mx-auto mt-8 max-w-[520px] font-body text-lg font-light leading-relaxed text-white/75"
           style={{ opacity: 0 }}
         >
-          From intimate gatherings to grand celebrations — we design unforgettable experiences that tell
-          your story.
+          {subheadline}
         </p>
 
         <div className="hero-ctas mt-10 flex flex-wrap items-center justify-center gap-5" style={{ opacity: 0 }}>
@@ -128,13 +145,13 @@ export default function HeroSection() {
             href="/gallery"
             className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full bg-[#C9A96E] px-8 py-4 font-body text-[12px] uppercase tracking-[0.2em] text-[#0F0E0C] transition-all duration-300 hover:bg-[#E8D5B0]"
           >
-            Explore Our Work
+            {ctaPrimary}
           </Link>
           <Link
             href="/quote"
             className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-white/60 px-8 py-4 font-body text-[12px] uppercase tracking-[0.2em] text-white transition-all duration-300 hover:border-white hover:bg-white/10"
           >
-            Request a Quote
+            {ctaSecondary}
           </Link>
         </div>
       </div>

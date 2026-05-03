@@ -5,10 +5,28 @@ import Image from "next/image";
 import Link from "next/link";
 import { gsap, prefersReducedMotion } from "@/lib/gsap";
 
-const VIVIAN_IMAGE =
+const DEFAULT_IMAGE =
   "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=800&q=80";
 
-export default function AboutPreview() {
+export type AboutPreviewProps = {
+  eyebrow?: string;
+  headline?: string;
+  body1?: string;
+  pullquote?: string;
+  body2?: string;
+  image?: string;
+  ctaLabel?: string;
+};
+
+export default function AboutPreview({
+  eyebrow = "The Mind Behind the Magic",
+  headline = "Hi there, I'm Vivian",
+  body1 = "Vivabloom was born from my obsession with detail and my love of creating truly precious moments. For me, it is never just about flowers or balloons or draping — it is about flowers, feelings, and the stories we tell.",
+  pullquote = '"I make every event personal. I believe in the magic of perfectly executed, deeply felt celebrations."',
+  body2 = "Every collaboration begins with listening — truly understanding your vision — then building something that makes your day feel extraordinary and entirely your own.",
+  image = DEFAULT_IMAGE,
+  ctaLabel = "Meet the Full Team",
+}: AboutPreviewProps) {
   const rootRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -70,7 +88,7 @@ export default function AboutPreview() {
         <div className="relative">
           <div className="about-image-wrap relative z-10 overflow-hidden rounded-sm" style={{ aspectRatio: "4/5", opacity: 0 }}>
             <Image
-              src={VIVIAN_IMAGE}
+              src={image || DEFAULT_IMAGE}
               alt="Vivian, Founder of Vivabloom"
               fill
               className="object-cover object-top"
@@ -86,29 +104,23 @@ export default function AboutPreview() {
 
         <div className="about-content">
           <p className="about-text-item eyebrow mb-6" style={{ opacity: 0 }}>
-            The Mind Behind the Magic
+            {eyebrow}
           </p>
           <h2
             className="about-text-item mb-2 font-display text-[52px] italic leading-tight text-[#0F0E0C]"
             style={{ opacity: 0 }}
           >
-            Hi there, I&apos;m <em className="text-[#C9A96E]">Vivian</em>
+            {headline}
           </h2>
           <div className="about-text-item my-8 h-px w-16 bg-[#C9A96E]" style={{ opacity: 0 }} />
           <p className="about-text-item mb-6 font-body text-base leading-[1.8] text-[#4A4843]" style={{ opacity: 0 }}>
-            Vivabloom was born from my obsession with detail and my love of creating truly precious moments.
-            For me, it&apos;s never just about flowers or balloons or draping — it&apos;s about flowers,
-            feelings, and the stories we tell.
+            {body1}
           </p>
           <blockquote className="about-text-item my-8 border-l-2 border-[#C9A96E] pl-6" style={{ opacity: 0 }}>
-            <p className="font-display text-[24px] italic leading-tight text-[#0F0E0C]">
-              &ldquo;I make every event personal. I believe in the magic of perfectly executed, deeply felt
-              celebrations.&rdquo;
-            </p>
+            <p className="font-display text-[24px] italic leading-tight text-[#0F0E0C]">{pullquote}</p>
           </blockquote>
           <p className="about-text-item mb-10 font-body text-base leading-[1.8] text-[#4A4843]" style={{ opacity: 0 }}>
-            Every collaboration begins with listening — truly understanding your vision — then building
-            something that makes your day feel extraordinary and entirely your own.
+            {body2}
           </p>
           <div className="about-text-item mb-10 flex flex-wrap gap-10" style={{ opacity: 0 }}>
             {[
@@ -124,7 +136,7 @@ export default function AboutPreview() {
             ))}
           </div>
           <Link href="/about" className="about-text-item champagne-outline-btn inline-block" style={{ opacity: 0 }}>
-            Meet the Full Team
+            {ctaLabel}
           </Link>
         </div>
       </div>

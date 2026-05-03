@@ -46,7 +46,17 @@ function ServiceCard({
   );
 }
 
-export default function ServicesSection({ hideHeader }: { hideHeader?: boolean }) {
+export type ServicesSectionProps = {
+  hideHeader?: boolean;
+  eyebrow?: string;
+  headline?: string;
+};
+
+export default function ServicesSection({
+  hideHeader,
+  eyebrow = "What We Do",
+  headline = "Our Services",
+}: ServicesSectionProps) {
   const sectionRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -86,9 +96,9 @@ export default function ServicesSection({ hideHeader }: { hideHeader?: boolean }
     <section ref={sectionRef} className="bg-[#0F0E0C]">
       {!hideHeader ? (
         <div className="px-[5%] pb-16 pt-24 text-center">
-          <p className="mb-4 font-body text-[10px] uppercase tracking-[0.35em] text-[#C9A96E]">What We Do</p>
+          <p className="mb-4 font-body text-[10px] uppercase tracking-[0.35em] text-[#C9A96E]">{eyebrow}</p>
           <AnimatedHeading tag="h2" className="font-display text-[56px] italic leading-tight text-white">
-            Our Services
+            {headline}
           </AnimatedHeading>
         </div>
       ) : (

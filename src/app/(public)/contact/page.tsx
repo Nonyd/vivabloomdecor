@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { IconFacebook, IconInstagram } from "@/components/public/social-icons";
 import ContactForm from "@/components/public/ContactForm";
+import { getPageContent, get } from "@/lib/content";
 
 export const metadata: Metadata = {
   title: "Contact Us",
@@ -16,31 +17,63 @@ function PinterestIcon({ className }: { className?: string }) {
   );
 }
 
-export default function ContactPage() {
+export default async function ContactPage() {
+  const content = await getPageContent("contact");
+  const address = get(content, "details", "address", "Melbourne, Victoria, Australia");
+  const phone = get(content, "details", "phone", "+61 3 XXXX XXXX");
+  const email = get(content, "details", "email", "info@vivabloomdecor.com.au");
+  const hours = get(content, "details", "hours");
+  const responseTime = get(content, "details", "response_time");
+  const telHref = phone.replace(/\s/g, "");
+
   return (
     <main className="min-h-screen bg-ivory pt-20">
+      <div className="border-b border-champagne/15 bg-[#0F0E0C] px-[5%] py-16 text-center">
+        <p className="eyebrow-light mb-3">Studio</p>
+        <h1 className="font-display text-5xl italic text-white md:text-6xl">
+          {get(content, "hero", "headline", "Get In Touch")}
+        </h1>
+        {get(content, "hero", "subheadline") ? (
+          <p className="mx-auto mt-4 max-w-lg font-body text-white/65">
+            {get(content, "hero", "subheadline")}
+          </p>
+        ) : null}
+      </div>
+
       <div className="mx-auto grid max-w-7xl grid-cols-1 gap-16 px-[5%] py-16 lg:grid-cols-[40%_60%] lg:gap-20">
         <div>
-          <p className="eyebrow mb-4">Studio</p>
-          <h1 className="mb-10 font-display text-5xl italic text-onyx md:text-6xl">Contact</h1>
+          <p className="eyebrow mb-4">Reach us</p>
+          <h2 className="mb-10 font-display text-3xl italic text-onyx md:text-4xl">Contact</h2>
 
           <ul className="space-y-6 font-body text-charcoal">
             <li className="flex gap-3">
               <span className="text-champagne">📍</span>
-              <span>Melbourne, Victoria, Australia</span>
+              <span>{address}</span>
             </li>
             <li className="flex gap-3">
               <span className="text-champagne">📞</span>
-              <a href="tel:+61300000000" className="hover:text-champagne">
-                +61 3 XXXX XXXX
+              <a href={`tel:${telHref}`} className="hover:text-champagne">
+                {phone}
               </a>
             </li>
             <li className="flex gap-3">
               <span className="text-champagne">✉️</span>
-              <a href="mailto:info@vivabloomdecor.com.au" className="hover:text-champagne">
-                info@vivabloomdecor.com.au
+              <a href={`mailto:${email}`} className="hover:text-champagne">
+                {email}
               </a>
             </li>
+            {hours ? (
+              <li className="flex gap-3">
+                <span className="text-champagne">🕐</span>
+                <span>{hours}</span>
+              </li>
+            ) : null}
+            {responseTime ? (
+              <li className="flex gap-3">
+                <span className="text-champagne">💬</span>
+                <span>{responseTime}</span>
+              </li>
+            ) : null}
           </ul>
 
           <div className="mt-10 flex gap-6 text-charcoal">

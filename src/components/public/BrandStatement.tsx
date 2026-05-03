@@ -6,22 +6,41 @@ import BrandDividerReveal from "@/components/public/BrandDividerReveal";
 import ScrollReveal from "@/components/public/ScrollReveal";
 import { gsap, prefersReducedMotion, ScrollTrigger } from "@/lib/gsap";
 
-const stats = [
-  { label: "Years of Excellence", target: 10, suffix: "+" },
-  { label: "Events Delivered", target: 500, suffix: "+" },
-  { label: "Cities Served", target: 3, suffix: "" },
-  { label: "Average Rating", display: "5★", target: null as number | null },
+export type BrandStat = { value: string; label: string };
+
+const defaultStats: BrandStat[] = [
+  { value: "10+", label: "Years of Excellence" },
+  { value: "500+", label: "Events Delivered" },
+  { value: "3", label: "Cities Served" },
+  { value: "5★", label: "Average Rating" },
 ];
 
-export default function BrandStatement() {
+function parseCounterParts(value: string): { target: number; suffix: string } | null {
+  const m = value.match(/^(\d+)(.*)$/);
+  if (!m) return null;
+  return { target: parseInt(m[1], 10), suffix: m[2] ?? "" };
+}
+
+export type BrandStatementProps = {
+  quote?: string;
+  body?: string;
+  stats?: BrandStat[];
+};
+
+export default function BrandStatement({
+  quote = "Every event is a story.\nWe make it unforgettable.",
+  body = "At Vivabloom, we believe every celebration should feel seamless, beautiful, and deeply personal. From florals to full productions, we bring your vision to life with flawless precision.",
+  stats = defaultStats,
+}: BrandStatementProps) {
   const sectionRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     if (prefersReducedMotion()) {
       const els = sectionRef.current?.querySelectorAll(".stat-value");
       stats.forEach((stat, i) => {
-        if (stat.target === null || !els?.[i]) return;
-        (els[i] as HTMLElement).textContent = `${stat.target}${stat.suffix}`;
+        const parsed = parseCounterParts(stat.value);
+        if (!parsed || !els?.[i]) return;
+        (els[i] as HTMLElement).textContent = `${parsed.target}${parsed.suffix}`;
       });
       return;
     }
@@ -54,7 +73,7 @@ export default function BrandStatement() {
     }, sectionRef);
 
     return () => ctx.revert();
-  }, []);
+  }, [stats]);
 
   return (
     <section ref={sectionRef} className="bg-[#F8F5EE] px-[5%] py-28">
@@ -68,38 +87,38 @@ export default function BrandStatement() {
               tag="h2"
               className="brand-quote max-w-2xl whitespace-pre-line font-display italic leading-[1.1] text-[#0F0E0C] md:text-[52px]"
             >
-              {"Every event is a story.\nWe make it unforgettable."}
+              {quote}
             </AnimatedHeading>
           </ScrollReveal>
           <BrandDividerReveal />
           <ScrollReveal delay={100}>
-            <p className="max-w-lg font-body text-base leading-relaxed text-[#4A4843]">
-              At Vivabloom, we believe every celebration should feel seamless, beautiful, and deeply personal.
-              From florals to full productions, we bring your vision to life with flawless precision.
-            </p>
+            <p className="max-w-lg font-body text-base leading-relaxed text-[#4A4843]">{body}</p>
           </ScrollReveal>
         </div>
 
         <ScrollReveal delay={150} className="w-full max-w-md lg:max-w-none">
           <div className="grid grid-cols-2 gap-px rounded-sm border border-[#C9A96E]/20 bg-[#C9A96E]/20">
-            {stats.map((stat) => (
-              <div key={stat.label} className="bg-[#F8F5EE] p-8 text-center md:p-10">
-                <p
-                  className="stat-value font-display text-[52px] italic leading-none text-[#0F0E0C]"
-                  {...(stat.target !== null
-                    ? {
-                        "data-target": String(stat.target),
-                        "data-suffix": stat.suffix,
-                      }
-                    : {})}
-                >
-                  {stat.display ?? `0${stat.suffix}`}
-                </p>
-                <p className="mt-2 font-body text-[10px] uppercase tracking-[0.25em] text-[#C9A96E]">
-                  {stat.label}
-                </p>
-              </div>
-            ))}
+            {stats.map((stat) => {
+              const parsed = parseCounterParts(stat.value);
+              return (
+                <div key={stat.label} className="bg-[#F8F5EE] p-8 text-center md:p-10">
+                  <p
+                    className="stat-value font-display text-[52px] italic leading-none text-[#0F0E0C]"
+                    {...(parsed
+                      ? {
+                          "data-target": String(parsed.target),
+                          "data-suffix": parsed.suffix,
+                        }
+                      : {})}
+                  >
+                    {parsed ? `0${parsed.suffix}` : stat.value}
+                  </p>
+                  <p className="mt-2 font-body text-[10px] uppercase tracking-[0.25em] text-[#C9A96E]">
+                    {stat.label}
+                  </p>
+                </div>
+              );
+            })}
           </div>
         </ScrollReveal>
       </div>

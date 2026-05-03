@@ -11,6 +11,11 @@ import { cn } from "@/lib/utils";
 const BG =
   "https://images.unsplash.com/photo-1519741497674-611481863552?w=1920&q=80";
 
+type QuotePageClientProps = {
+  heroHeadline?: string;
+  heroSubheadline?: string;
+};
+
 const eventTypes = [
   "Wedding",
   "Corporate",
@@ -19,7 +24,10 @@ const eventTypes = [
   "Other",
 ];
 
-export default function QuotePageClient() {
+export default function QuotePageClient({
+  heroHeadline = "Request a Quote",
+  heroSubheadline = "Tell us about your event and we'll craft a personalised proposal just for you.",
+}: QuotePageClientProps) {
   const [step, setStep] = useState(1);
   const [done, setDone] = useState<{ name: string } | null>(null);
 
@@ -98,10 +106,8 @@ export default function QuotePageClient() {
 
       <div className="relative z-10 mx-auto max-w-2xl px-[5%] pb-24">
         <p className="eyebrow-light mb-4 text-center">Enquiry</p>
-        <h1 className="mb-4 text-center font-display text-4xl italic text-white md:text-5xl">Request a quote</h1>
-        <p className="mb-12 text-center font-body text-sm text-white/50">
-          Share a few details — we&apos;ll follow up with tailored next steps.
-        </p>
+        <h1 className="mb-4 text-center font-display text-4xl italic text-white md:text-5xl">{heroHeadline}</h1>
+        <p className="mb-12 text-center font-body text-sm text-white/50">{heroSubheadline}</p>
 
         <div className="mb-16 flex items-center justify-center gap-0">
           {["Event Details", "Your Contact", "Your Vision"].map((label, i) => (

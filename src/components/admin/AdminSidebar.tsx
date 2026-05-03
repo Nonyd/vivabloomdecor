@@ -17,6 +17,12 @@ import {
   LogOut,
   GalleryHorizontal,
   BookOpen,
+  FileEdit,
+  Home,
+  Sparkles,
+  User,
+  Phone,
+  Ticket,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -26,6 +32,18 @@ const navItems = [
   { href: "/admin/bookings", label: "Bookings", icon: Calendar },
   { href: "/admin/clients", label: "Clients", icon: Users },
   { href: "/admin/invoices", label: "Invoices", icon: FileText },
+  { href: "/admin/events", label: "Events", icon: Ticket },
+  {
+    label: "Pages",
+    icon: FileEdit,
+    children: [
+      { href: "/admin/pages/home", label: "Home Page", icon: Home },
+      { href: "/admin/pages/services", label: "Services", icon: Sparkles },
+      { href: "/admin/pages/about", label: "About", icon: User },
+      { href: "/admin/pages/contact", label: "Contact", icon: Phone },
+      { href: "/admin/pages/quote", label: "Quote Page", icon: MessageSquare },
+    ],
+  },
   {
     label: "Content",
     icon: Edit3,
@@ -45,6 +63,7 @@ interface Props {
 
 export default function AdminSidebar({ user }: Props) {
   const pathname = usePathname();
+  const [pagesOpen, setPagesOpen] = useState(pathname.startsWith("/admin/pages"));
   const [contentOpen, setContentOpen] = useState(pathname.startsWith("/admin/content"));
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -66,23 +85,23 @@ export default function AdminSidebar({ user }: Props) {
       <nav className="flex-1 px-3 py-6 space-y-0.5 overflow-y-auto">
         {navItems.map((item) => {
           if ("children" in item && item.children) {
+            const isPages = item.label === "Pages";
+            const open = isPages ? pagesOpen : contentOpen;
+            const setOpen = isPages ? setPagesOpen : setContentOpen;
             return (
               <div key={item.label}>
                 <button
                   type="button"
-                  onClick={() => setContentOpen(!contentOpen)}
+                  onClick={() => setOpen(!open)}
                   className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-white/50 hover:text-white hover:bg-white/5 transition-all group"
                 >
                   <div className="flex items-center gap-3">
                     <item.icon size={16} />
                     <span className="font-body text-[13px]">{item.label}</span>
                   </div>
-                  <ChevronDown
-                    size={14}
-                    className={`transition-transform ${contentOpen ? "rotate-180" : ""}`}
-                  />
+                  <ChevronDown size={14} className={`transition-transform ${open ? "rotate-180" : ""}`} />
                 </button>
-                {contentOpen && (
+                {open && (
                   <div className="ml-4 mt-0.5 space-y-0.5 border-l border-white/5 pl-3">
                     {item.children.map((child) => (
                       <Link
