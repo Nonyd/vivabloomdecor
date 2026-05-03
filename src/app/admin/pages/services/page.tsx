@@ -1,5 +1,6 @@
 import { getPageContent } from "@/lib/content";
 import PageEditor, { type SectionConfig } from "@/components/admin/cms/PageEditor";
+import { getCloudinaryWidgetConfig } from "@/lib/settings";
 
 const serviceFields = (section: string, label: string): SectionConfig => ({
   section,
@@ -38,7 +39,10 @@ const sections: SectionConfig[] = [
 ];
 
 export default async function ServicesPageCMS() {
-  const content = await getPageContent("services");
+  const [content, cloudinary] = await Promise.all([
+    getPageContent("services"),
+    getCloudinaryWidgetConfig(),
+  ]);
   return (
     <div>
       <div className="mb-8">
@@ -48,7 +52,13 @@ export default async function ServicesPageCMS() {
           Edit each service card — name, description, pricing, and image.
         </p>
       </div>
-      <PageEditor page="services" sections={sections} initial={content} />
+      <PageEditor
+        page="services"
+        sections={sections}
+        initial={content}
+        cloudinaryCloudName={cloudinary.cloudName || undefined}
+        cloudinaryUploadPreset={cloudinary.uploadPreset}
+      />
     </div>
   );
 }

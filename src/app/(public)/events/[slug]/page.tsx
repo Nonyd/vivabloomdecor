@@ -4,6 +4,9 @@ import { format } from "date-fns";
 import { Calendar, MapPin, Users, Clock } from "lucide-react";
 import Image from "next/image";
 import TicketPurchaseFlow, { type SerializableEvent } from "@/components/events/TicketPurchaseFlow";
+import { getPayPalClientId } from "@/lib/paypal";
+import { getSetting } from "@/lib/settings";
+import { getStripePublishableKey } from "@/lib/stripe";
 
 export const dynamic = "force-dynamic";
 
@@ -48,6 +51,12 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
 
   const spotsLeft = event.capacity - event.ticketsSold;
   const soldOut = spotsLeft <= 0;
+
+  const [stripePublishableKey, paypalClientId, showStripeAfterpay] = await Promise.all([
+    getStripePublishableKey(),
+    getPayPalClientId(),
+    getSetting("stripe_afterpay_enabled").then((v) => v === "" || v === "true"),
+  ]);
 
   return (
     <main className="min-h-screen bg-[#F8F5EE]">
@@ -107,7 +116,14 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
           </div>
 
           <div className="self-start lg:sticky lg:top-24">
-            <TicketPurchaseFlow event={toSerializable(event)} spotsLeft={spotsLeft} soldOut={soldOut} />
+            <TicketPurchaseFlow
+              event={toSerializable(event)}
+              spotsLeft={spotsLeft}
+              soldOut={soldOut}
+              stripePublishableKey={stripePublishableKey}
+              paypalClientId={paypalClientId}
+              showStripeAfterpay={showStripeAfterpay}
+            />
           </div>
         </div>
       </div>

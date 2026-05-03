@@ -1,20 +1,31 @@
-export function getPayPalApiBase(): string {
-  if (process.env.PAYPAL_API_BASE) return process.env.PAYPAL_API_BASE;
+import { getSetting } from "@/lib/settings";
+
+export async function getPayPalBase(): Promise<string> {
+  const override = process.env.PAYPAL_API_BASE;
+  if (override) return override;
+  const mode = await getSetting("paypal_mode");
+  if (mode === "live") {
+    return "https://api-m.paypal.com";
+  }
+  if (mode === "sandbox") {
+    return "https://api-m.sandbox.paypal.com";
+  }
   return process.env.NODE_ENV === "production"
     ? "https://api-m.paypal.com"
     : "https://api-m.sandbox.paypal.com";
 }
 
-export async function getPayPalAccessToken(): Promise<string> {
-  const id = process.env.PAYPAL_CLIENT_ID;
-  const secret = process.env.PAYPAL_CLIENT_SECRET;
-  if (!id || !secret) {
-    throw new Error("PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET must be set");
+export async function getPayPalToken(): Promise<string> {
+  const clientId = await getSetting("paypal_client_id");
+  const clientSecret = await getSetting("paypal_client_secret");
+  if (!clientId || !clientSecret) {
+    throw new Error("PayPal credentials not configured. Go to Admin → Settings → Payments.");
   }
-  const res = await fetch(`${getPayPalApiBase()}/v1/oauth2/token`, {
+  const base = await getPayPalBase();
+  const res = await fetch(`${base}/v1/oauth2/token`, {
     method: "POST",
     headers: {
-      Authorization: `Basic ${Buffer.from(`${id}:${secret}`).toString("base64")}`,
+      Authorization: `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString("base64")}`,
       "Content-Type": "application/x-www-form-urlencoded",
     },
     body: "grant_type=client_credentials",
@@ -24,4 +35,18 @@ export async function getPayPalAccessToken(): Promise<string> {
     throw new Error(data.error ?? "PayPal token failed");
   }
   return data.access_token;
+}
+
+/** @deprecated Use getPayPalToken */
+export async function getPayPalAccessToken(): Promise<string> {
+  return getPayPalToken();
+}
+
+/** @deprecated Use getPayPalBase */
+export async function getPayPalApiBase(): Promise<string> {
+  return getPayPalBase();
+}
+
+export async function getPayPalClientId(): Promise<string> {
+  return getSetting("paypal_client_id");
 }

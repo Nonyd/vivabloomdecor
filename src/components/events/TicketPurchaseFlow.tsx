@@ -1,13 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 import { loadStripe } from "@stripe/stripe-js";
 import { CreditCard, Minus, Plus, User, Mail, Phone } from "lucide-react";
-
-const stripePk = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
-const stripePromise = stripePk ? loadStripe(stripePk) : null;
-const paypalClientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID ?? "";
 
 type Step = "select" | "details" | "payment" | "success";
 
@@ -29,9 +25,28 @@ interface Props {
   event: SerializableEvent;
   spotsLeft: number;
   soldOut: boolean;
+  /** From Admin → Settings (or NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY). */
+  stripePublishableKey?: string;
+  /** From Admin → Settings (or NEXT_PUBLIC_PAYPAL_CLIENT_ID). */
+  paypalClientId?: string;
+  showStripeAfterpay?: boolean;
 }
 
-export default function TicketPurchaseFlow({ event, spotsLeft, soldOut }: Props) {
+export default function TicketPurchaseFlow({
+  event,
+  spotsLeft,
+  soldOut,
+  stripePublishableKey,
+  paypalClientId: paypalClientIdProp,
+  showStripeAfterpay = true,
+}: Props) {
+  const stripePk =
+    stripePublishableKey?.trim() ||
+    process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ||
+    "";
+  const stripePromise = useMemo(() => (stripePk ? loadStripe(stripePk) : null), [stripePk]);
+  const paypalClientId =
+    paypalClientIdProp?.trim() || process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || "";
   const [step, setStep] = useState<Step>("select");
   const [quantity, setQuantity] = useState(1);
   const [details, setDetails] = useState({ name: "", email: "", phone: "" });
@@ -199,7 +214,7 @@ export default function TicketPurchaseFlow({ event, spotsLeft, soldOut }: Props)
         {!event.isFree ? (
           <div className="space-y-3">
             <p className="font-body text-[11px] uppercase tracking-[0.15em] text-[#4A4843]/50">
-              Pay by Card or Afterpay
+              {showStripeAfterpay ? "Pay by Card or Afterpay" : "Pay by Card"}
             </p>
             <button
               type="button"
@@ -228,7 +243,11 @@ export default function TicketPurchaseFlow({ event, spotsLeft, soldOut }: Props)
               className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-[#0F0E0C] py-3.5 font-body text-[13px] uppercase tracking-[0.15em] text-[#0F0E0C] transition-all hover:bg-[#0F0E0C] hover:text-white disabled:opacity-50"
             >
               <CreditCard size={16} />
-              {loading ? "Redirecting…" : "Pay with Card / Afterpay"}
+              {loading
+                ? "Redirecting…"
+                : showStripeAfterpay
+                  ? "Pay with Card / Afterpay"
+                  : "Pay with Card"}
             </button>
           </div>
         ) : null}

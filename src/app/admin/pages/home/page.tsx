@@ -1,5 +1,6 @@
 import { getPageContent } from "@/lib/content";
 import PageEditor, { type SectionConfig } from "@/components/admin/cms/PageEditor";
+import { getCloudinaryWidgetConfig } from "@/lib/settings";
 
 const sections: SectionConfig[] = [
   {
@@ -187,7 +188,10 @@ const sections: SectionConfig[] = [
 ];
 
 export default async function HomePageCMS() {
-  const content = await getPageContent("home");
+  const [content, cloudinary] = await Promise.all([
+    getPageContent("home"),
+    getCloudinaryWidgetConfig(),
+  ]);
   return (
     <div>
       <div className="mb-8">
@@ -197,7 +201,13 @@ export default async function HomePageCMS() {
           Changes appear on the website immediately after saving.
         </p>
       </div>
-      <PageEditor page="home" sections={sections} initial={content} />
+      <PageEditor
+        page="home"
+        sections={sections}
+        initial={content}
+        cloudinaryCloudName={cloudinary.cloudName || undefined}
+        cloudinaryUploadPreset={cloudinary.uploadPreset}
+      />
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import { getPageContent } from "@/lib/content";
 import PageEditor, { type SectionConfig } from "@/components/admin/cms/PageEditor";
+import { getCloudinaryWidgetConfig } from "@/lib/settings";
 
 const sections: SectionConfig[] = [
   {
@@ -41,7 +42,10 @@ const sections: SectionConfig[] = [
 ];
 
 export default async function AboutPageCMS() {
-  const content = await getPageContent("about");
+  const [content, cloudinary] = await Promise.all([
+    getPageContent("about"),
+    getCloudinaryWidgetConfig(),
+  ]);
   return (
     <div>
       <div className="mb-8">
@@ -49,7 +53,13 @@ export default async function AboutPageCMS() {
         <h1 className="font-display text-[36px] italic text-[#0F0E0C]">About Page</h1>
         <p className="mt-1 font-body text-sm text-[#4A4843]/60">Hero, founder story, and values.</p>
       </div>
-      <PageEditor page="about" sections={sections} initial={content} />
+      <PageEditor
+        page="about"
+        sections={sections}
+        initial={content}
+        cloudinaryCloudName={cloudinary.cloudName || undefined}
+        cloudinaryUploadPreset={cloudinary.uploadPreset}
+      />
     </div>
   );
 }

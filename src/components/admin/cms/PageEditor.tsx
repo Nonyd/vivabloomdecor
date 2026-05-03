@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import Image from "next/image";
 import { CldUploadWidget } from "next-cloudinary";
+import { CLOUDINARY_UPLOAD_PRESET } from "@/lib/cloudinary-client";
 import { toast } from "sonner";
 import { Save, Image as ImageIcon, Type, AlignLeft } from "lucide-react";
 
@@ -25,9 +26,18 @@ interface Props {
   page: string;
   sections: SectionConfig[];
   initial: Record<string, Record<string, string>>;
+  /** From Admin → Settings / env — passed to Cloudinary upload widget. */
+  cloudinaryCloudName?: string;
+  cloudinaryUploadPreset?: string;
 }
 
-export default function PageEditor({ page, sections, initial }: Props) {
+export default function PageEditor({
+  page,
+  sections,
+  initial,
+  cloudinaryCloudName,
+  cloudinaryUploadPreset,
+}: Props) {
   const [values, setValues] = useState<Record<string, string>>(() => {
     const flat: Record<string, string> = {};
     for (const sec of sections) {
@@ -183,7 +193,8 @@ export default function PageEditor({ page, sections, initial }: Props) {
                     )}
                     <div className="flex flex-wrap gap-2">
                       <CldUploadWidget
-                        uploadPreset="vivabloom_gallery"
+                        options={cloudinaryCloudName ? { cloudName: cloudinaryCloudName } : undefined}
+                        uploadPreset={cloudinaryUploadPreset ?? CLOUDINARY_UPLOAD_PRESET}
                         onUpload={(result) => {
                           const info = result?.info as { secure_url?: string } | undefined;
                           const url = info?.secure_url;

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getPayPalAccessToken, getPayPalApiBase } from "@/lib/paypal";
+import { getPayPalToken, getPayPalBase } from "@/lib/paypal";
 
 export async function POST(req: NextRequest) {
   try {
@@ -28,9 +28,9 @@ export async function POST(req: NextRequest) {
 
     const price = event.ticketPrice;
     const total = (price * quantity).toFixed(2);
-    const token = await getPayPalAccessToken();
+    const token = await getPayPalToken();
 
-    const res = await fetch(`${getPayPalApiBase()}/v2/checkout/orders`, {
+    const res = await fetch(`${await getPayPalBase()}/v2/checkout/orders`, {
       method: "POST",
       headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
       body: JSON.stringify({

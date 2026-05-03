@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { IconFacebook, IconInstagram } from "@/components/public/social-icons";
 import ContactForm from "@/components/public/ContactForm";
 import { getPageContent, get } from "@/lib/content";
+import { getSettings } from "@/lib/settings";
 
 export const metadata: Metadata = {
   title: "Contact Us",
@@ -17,14 +18,45 @@ function PinterestIcon({ className }: { className?: string }) {
   );
 }
 
+function TikTokIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+      <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-5.2 1.74 2.89 2.89 0 012.31-4.64 2.93 2.93 0 01.88.13V9.4a6.84 6.84 0 00-1-.05A6.33 6.33 0 005 20.1a6.34 6.34 0 0010.86-4.43v-7a8.16 8.16 0 004.77 1.52v-3.4a4.85 4.85 0 01-1-.1z" />
+    </svg>
+  );
+}
+
 export default async function ContactPage() {
   const content = await getPageContent("contact");
-  const address = get(content, "details", "address", "Melbourne, Victoria, Australia");
-  const phone = get(content, "details", "phone", "+61 3 XXXX XXXX");
-  const email = get(content, "details", "email", "info@vivabloomdecor.com.au");
-  const hours = get(content, "details", "hours");
+  const cfg = await getSettings([
+    "contact_phone",
+    "contact_email",
+    "contact_address",
+    "contact_city",
+    "contact_hours",
+    "google_maps_embed",
+    "social_instagram",
+    "social_facebook",
+    "social_tiktok",
+    "social_pinterest",
+  ]);
+
+  const address =
+    [cfg.contact_address, cfg.contact_city].filter(Boolean).join(", ") ||
+    get(content, "details", "address", "Melbourne, Victoria, Australia");
+  const phone = cfg.contact_phone || get(content, "details", "phone", "+61 3 XXXX XXXX");
+  const email = cfg.contact_email || get(content, "details", "email", "info@vivabloomdecor.com.au");
+  const hours = cfg.contact_hours || get(content, "details", "hours");
   const responseTime = get(content, "details", "response_time");
   const telHref = phone.replace(/\s/g, "");
+  const mapSrc =
+    cfg.google_maps_embed ||
+    "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d805184.0437066072!2d144.59965462922837!3d-37.97168704876687!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6ad646b5d2e4f503%3A0xa568d2d5a379e35a!2sMelbourne%20VIC%2C%20Australia!5e0!3m2!1sen!2sau!4v1710000000000!5m2!1sen!2sau";
+
+  const ig = cfg.social_instagram || "https://instagram.com";
+  const fb = cfg.social_facebook || "https://facebook.com";
+  const tt = cfg.social_tiktok || "https://tiktok.com";
+  const pi = cfg.social_pinterest || "https://pinterest.com";
 
   return (
     <main className="min-h-screen bg-ivory pt-20">
@@ -77,21 +109,24 @@ export default async function ContactPage() {
           </ul>
 
           <div className="mt-10 flex gap-6 text-charcoal">
-            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+            <a href={ig} target="_blank" rel="noopener noreferrer" aria-label="Instagram">
               <IconInstagram className="h-[22px] w-[22px] hover:text-champagne" />
             </a>
-            <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+            <a href={fb} target="_blank" rel="noopener noreferrer" aria-label="Facebook">
               <IconFacebook className="h-[22px] w-[22px] hover:text-champagne" />
             </a>
-            <a href="https://pinterest.com" target="_blank" rel="noopener noreferrer" aria-label="Pinterest">
+            <a href={tt} target="_blank" rel="noopener noreferrer" aria-label="TikTok">
+              <TikTokIcon className="h-[22px] w-[22px] hover:text-champagne" />
+            </a>
+            <a href={pi} target="_blank" rel="noopener noreferrer" aria-label="Pinterest">
               <PinterestIcon className="h-[22px] w-[22px] hover:text-champagne" />
             </a>
           </div>
 
           <div className="mt-12 aspect-video w-full overflow-hidden rounded-sm border border-charcoal/10">
             <iframe
-              title="Melbourne map"
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d805184.0437066072!2d144.59965462922837!3d-37.97168704876687!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6ad646b5d2e4f503%3A0xa568d2d5a379e35a!2sMelbourne%20VIC%2C%20Australia!5e0!3m2!1sen!2sau!4v1710000000000!5m2!1sen!2sau"
+              title="Studio map"
+              src={mapSrc}
               width="100%"
               height="100%"
               style={{ border: 0 }}

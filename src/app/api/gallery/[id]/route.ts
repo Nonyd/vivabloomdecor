@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { cloudinary } from "@/lib/cloudinary";
+import { getCloudinaryConfig } from "@/lib/cloudinary";
 import { requireStaffSession } from "@/lib/admin-api";
 
 const patchSchema = z.object({
@@ -49,8 +49,9 @@ export async function DELETE(_req: NextRequest, { params }: { params: { id: stri
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
 
-    if (existing.cloudinaryId && process.env.CLOUDINARY_CLOUD_NAME) {
+    if (existing.cloudinaryId) {
       try {
+        const cloudinary = await getCloudinaryConfig();
         await cloudinary.uploader.destroy(existing.cloudinaryId);
       } catch (err) {
         console.error("Cloudinary delete:", err);

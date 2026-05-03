@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getStripe } from "@/lib/stripe";
+import { getSetting } from "@/lib/settings";
 
 export async function POST(req: NextRequest) {
   try {
@@ -36,10 +37,15 @@ export async function POST(req: NextRequest) {
     const price = useEarlyBird ? event.earlyBirdPrice! : event.ticketPrice;
 
     const baseUrl = process.env.NEXTAUTH_URL ?? "https://vivabloomdecor.com.au";
-    const stripe = getStripe();
+    const stripe = await getStripe();
+    const afterpayRaw = await getSetting("stripe_afterpay_enabled");
+    const afterpayEnabled = afterpayRaw === "" || afterpayRaw === "true";
+    const paymentMethodTypes = afterpayEnabled
+      ? (["card", "afterpay_clearpay"] as const)
+      : (["card"] as const);
 
     const session = await stripe.checkout.sessions.create({
-      payment_method_types: ["card", "afterpay_clearpay"],
+      payment_method_types: [...paymentMethodTypes],
       mode: "payment",
       customer_email: email,
       line_items: [

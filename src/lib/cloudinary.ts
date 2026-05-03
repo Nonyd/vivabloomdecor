@@ -1,11 +1,12 @@
 import { v2 as cloudinary } from "cloudinary";
+import { getSetting } from "@/lib/settings";
 
-if (process.env.CLOUDINARY_CLOUD_NAME) {
-  cloudinary.config({
-    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-    api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET,
-  });
+export async function getCloudinaryConfig() {
+  const [cloudName, apiKey, apiSecret] = await Promise.all([
+    getSetting("cloudinary_cloud_name"),
+    getSetting("cloudinary_api_key"),
+    getSetting("cloudinary_api_secret"),
+  ]);
+  cloudinary.config({ cloud_name: cloudName, api_key: apiKey, api_secret: apiSecret });
+  return cloudinary;
 }
-
-export { cloudinary };

@@ -24,6 +24,7 @@ import {
   Phone,
   Ticket,
 } from "lucide-react";
+import { useSession } from "next-auth/react";
 import { useState } from "react";
 
 const navItems = [
@@ -63,6 +64,14 @@ interface Props {
 
 export default function AdminSidebar({ user }: Props) {
   const pathname = usePathname();
+  const { data } = useSession();
+  const role = data?.user?.role;
+  const visibleNavItems = navItems.filter((item) => {
+    if ("href" in item && item.href === "/admin/settings" && role === "STAFF") {
+      return false;
+    }
+    return true;
+  });
   const [pagesOpen, setPagesOpen] = useState(pathname.startsWith("/admin/pages"));
   const [contentOpen, setContentOpen] = useState(pathname.startsWith("/admin/content"));
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -83,7 +92,7 @@ export default function AdminSidebar({ user }: Props) {
       </div>
 
       <nav className="flex-1 px-3 py-6 space-y-0.5 overflow-y-auto">
-        {navItems.map((item) => {
+        {visibleNavItems.map((item) => {
           if ("children" in item && item.children) {
             const isPages = item.label === "Pages";
             const open = isPages ? pagesOpen : contentOpen;

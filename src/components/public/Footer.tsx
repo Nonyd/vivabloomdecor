@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { IconFacebook, IconInstagram } from "@/components/public/social-icons";
 import NewsletterForm from "./NewsletterForm";
+import { getSettings } from "@/lib/settings";
 
 function PinterestIcon({ className }: { className?: string }) {
   return (
@@ -37,19 +38,45 @@ const serviceLinks = [
   { href: "/services#production", label: "Full Production" },
 ];
 
-export default function Footer() {
+export default async function Footer() {
+  const s = await getSettings([
+    "site_name",
+    "site_tagline",
+    "contact_phone",
+    "contact_email",
+    "contact_address",
+    "contact_city",
+    "abn",
+    "social_instagram",
+    "social_facebook",
+    "social_tiktok",
+    "social_pinterest",
+  ]);
+
+  const businessName = s.site_name || "Vivabloom";
+  const tagline = s.site_tagline || "Where Every Moment Becomes a Memory";
+  const phone = s.contact_phone || "+61 3 XXXX XXXX";
+  const email = s.contact_email || "info@vivabloomdecor.com.au";
+  const addressLine =
+    [s.contact_address, s.contact_city].filter(Boolean).join(", ") ||
+    "Melbourne, Victoria, Australia";
+  const abn = s.abn || "XX XXX XXX XXX";
+  const telHref = phone.replace(/\s/g, "");
+  const ig = s.social_instagram || "https://instagram.com";
+  const fb = s.social_facebook || "https://facebook.com";
+  const tt = s.social_tiktok || "https://tiktok.com";
+  const pi = s.social_pinterest || "https://pinterest.com";
+
   return (
     <footer className="bg-[#0F0E0C] text-white/50">
       <div className="border-t border-[rgba(201,169,110,0.3)] px-[5%] py-16">
         <div className="mx-auto grid max-w-7xl grid-cols-1 gap-12 sm:grid-cols-2 lg:grid-cols-4">
           <div>
-            <p className="font-accent text-[28px] text-[#C9A96E]">Vivabloom</p>
-            <p className="mt-3 font-body text-[14px] italic text-white/60">
-              Where Every Moment Becomes a Memory
-            </p>
+            <p className="font-accent text-[28px] text-[#C9A96E]">{businessName}</p>
+            <p className="mt-3 font-body text-[14px] italic text-white/60">{tagline}</p>
             <div className="mt-6 flex gap-5 text-white/50">
               <a
-                href="https://instagram.com"
+                href={ig}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="transition-colors hover:text-[#C9A96E]"
@@ -58,7 +85,7 @@ export default function Footer() {
                 <IconInstagram className="h-5 w-5" />
               </a>
               <a
-                href="https://facebook.com"
+                href={fb}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="transition-colors hover:text-[#C9A96E]"
@@ -67,7 +94,7 @@ export default function Footer() {
                 <IconFacebook className="h-5 w-5" />
               </a>
               <a
-                href="https://tiktok.com"
+                href={tt}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="transition-colors hover:text-[#C9A96E]"
@@ -76,7 +103,7 @@ export default function Footer() {
                 <TikTokIcon className="h-5 w-5" />
               </a>
               <a
-                href="https://pinterest.com"
+                href={pi}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="transition-colors hover:text-[#C9A96E]"
@@ -85,7 +112,7 @@ export default function Footer() {
                 <PinterestIcon className="h-5 w-5" />
               </a>
             </div>
-            <p className="mt-8 font-body text-[12px] text-white/30">ABN: XX XXX XXX XXX</p>
+            <p className="mt-8 font-body text-[12px] text-white/30">ABN: {abn}</p>
           </div>
 
           <div>
@@ -119,21 +146,18 @@ export default function Footer() {
             <ul className="space-y-3 text-[13px]">
               <li className="flex gap-2">
                 <span aria-hidden>📍</span>
-                <span>Melbourne, Victoria, Australia</span>
+                <span>{addressLine}</span>
               </li>
               <li className="flex gap-2">
                 <span aria-hidden>📞</span>
-                <a href="tel:+61300000000" className="transition-colors hover:text-[#C9A96E]">
-                  +61 3 XXXX XXXX
+                <a href={`tel:${telHref}`} className="transition-colors hover:text-[#C9A96E]">
+                  {phone}
                 </a>
               </li>
               <li className="flex gap-2">
                 <span aria-hidden>✉️</span>
-                <a
-                  href="mailto:info@vivabloomdecor.com.au"
-                  className="transition-colors hover:text-[#C9A96E]"
-                >
-                  info@vivabloomdecor.com.au
+                <a href={`mailto:${email}`} className="transition-colors hover:text-[#C9A96E]">
+                  {email}
                 </a>
               </li>
             </ul>
@@ -145,7 +169,7 @@ export default function Footer() {
 
         <div className="mx-auto mt-14 max-w-7xl border-t border-white/10 pt-8">
           <div className="flex flex-col items-center justify-between gap-4 text-[13px] text-white/50 md:flex-row">
-            <p>© 2026 Vivabloom Decor. All rights reserved.</p>
+            <p>© 2026 {businessName}. All rights reserved.</p>
             <div className="flex gap-6">
               <Link href="/privacy" className="transition-colors hover:text-[#C9A96E]">
                 Privacy Policy

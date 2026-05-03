@@ -1,29 +1,46 @@
-import { NextRequest, NextResponse } from "next/server";
-import { z } from "zod";
+import { NextResponse } from "next/server";
+import { Resend } from "resend";
+import { getSetting } from "@/lib/settings";
 import { requireStaffSession } from "@/lib/admin-api";
-import { sendTestEmail } from "@/lib/email";
 
-const schema = z.object({
-  to: z.string().email(),
-});
-
-export async function POST(req: NextRequest) {
+export async function POST() {
   const { session, response } = await requireStaffSession();
-  if (!session) return response;
+  if (!session) return response!;
+  if (!session.user.email) {
+    return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
+  }
+
+  const apiKey = await getSetting("resend_api_key");
+  const fromEmail =
+    (await getSetting("email_from_address")) || "hello@vivabloomdecor.com.au";
+  const fromName = (await getSetting("email_from_name")) || "Vivabloom";
+  const adminEmail =
+    (await getSetting("admin_notification_email")) || session.user.email;
+
+  if (!apiKey) {
+    return NextResponse.json({
+      success: false,
+      message: "Resend API key not configured yet",
+    });
+  }
 
   try {
-    const body = await req.json();
-    const { to } = schema.parse(body);
-    const result = await sendTestEmail(to);
-    if (!result.ok) {
-      return NextResponse.json({ error: result.message ?? "Email not sent" }, { status: 400 });
-    }
-    return NextResponse.json({ ok: true });
-  } catch (e) {
-    if (e instanceof z.ZodError) {
-      return NextResponse.json({ error: e.issues }, { status: 400 });
-    }
-    console.error(e);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    const resend = new Resend(apiKey);
+    await resend.emails.send({
+      from: `${fromName} <${fromEmail}>`,
+      to: adminEmail,
+      subject: "Vivabloom — Test Email ✓",
+      html: '<p style="font-family:Georgia;font-size:18px;color:#0F0E0C;">Your email settings are working correctly.</p>',
+    });
+    return NextResponse.json({
+      success: true,
+      message: `Test email sent to ${adminEmail}`,
+    });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Unknown error";
+    return NextResponse.json({
+      success: false,
+      message: `Email error: ${message}`,
+    });
   }
 }

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getPayPalAccessToken, getPayPalApiBase } from "@/lib/paypal";
+import { getPayPalToken, getPayPalBase } from "@/lib/paypal";
 import { fulfillOrder } from "@/lib/tickets";
 
 export async function POST(req: NextRequest) {
@@ -21,8 +21,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: true, orderId: dup.id });
     }
 
-    const token = await getPayPalAccessToken();
-    const res = await fetch(`${getPayPalApiBase()}/v2/checkout/orders/${paypalOrderId}/capture`, {
+    const token = await getPayPalToken();
+    const res = await fetch(`${await getPayPalBase()}/v2/checkout/orders/${paypalOrderId}/capture`, {
       method: "POST",
       headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
     });

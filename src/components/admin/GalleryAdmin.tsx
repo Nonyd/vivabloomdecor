@@ -3,13 +3,22 @@
 import type { GalleryItem } from "@prisma/client";
 import Image from "next/image";
 import { CldUploadWidget } from "next-cloudinary";
+import { CLOUDINARY_UPLOAD_PRESET } from "@/lib/cloudinary-client";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 
 const categories = ["Wedding", "Corporate", "Birthday", "Floral", "Balloon", "General"];
 
-export default function GalleryAdmin({ initialItems }: { initialItems: GalleryItem[] }) {
+export default function GalleryAdmin({
+  initialItems,
+  cloudinaryCloudName,
+  cloudinaryUploadPreset,
+}: {
+  initialItems: GalleryItem[];
+  cloudinaryCloudName?: string;
+  cloudinaryUploadPreset?: string;
+}) {
   const router = useRouter();
   const [items, setItems] = useState(initialItems);
 
@@ -83,12 +92,14 @@ export default function GalleryAdmin({ initialItems }: { initialItems: GalleryIt
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <p className="font-body text-sm text-[#4A4843] max-w-xl">
-          Upload preset <code className="text-xs bg-[#EDE8DC]/80 px-1 rounded">vivabloom_gallery</code>{" "}
-          and <code className="text-xs bg-[#EDE8DC]/80 px-1 rounded">NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME</code>{" "}
-          must be set.
+          In Cloudinary, create an unsigned upload preset (or set{" "}
+          <code className="text-xs bg-[#EDE8DC]/80 px-1 rounded">NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET</code>{" "}
+          to your preset name). Also set{" "}
+          <code className="text-xs bg-[#EDE8DC]/80 px-1 rounded">NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME</code>.
         </p>
         <CldUploadWidget
-          uploadPreset="vivabloom_gallery"
+          options={cloudinaryCloudName ? { cloudName: cloudinaryCloudName } : undefined}
+          uploadPreset={cloudinaryUploadPreset ?? CLOUDINARY_UPLOAD_PRESET}
           onUpload={async (result) => {
             const info = result?.info as
               | { secure_url?: string; public_id?: string; original_filename?: string }

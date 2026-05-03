@@ -4,6 +4,21 @@ import { authOptions } from "@/lib/auth";
 
 const STAFF_ROLES = ["ADMIN", "SUPER_ADMIN", "STAFF"] as const;
 
+const ADMIN_ROLES = ["ADMIN", "SUPER_ADMIN"] as const;
+
+/** Admin settings API: ADMIN or SUPER_ADMIN only (not STAFF). */
+export async function requireAdminSettingsSession() {
+  const session = await getServerSession(authOptions);
+  if (!session?.user) {
+    return { session: null, response: NextResponse.json({ error: "Unauthorized" }, { status: 401 }) };
+  }
+  const role = session.user.role;
+  if (!ADMIN_ROLES.includes(role as (typeof ADMIN_ROLES)[number])) {
+    return { session: null, response: NextResponse.json({ error: "Forbidden" }, { status: 403 }) };
+  }
+  return { session, response: null };
+}
+
 export async function requireStaffSession() {
   const session = await getServerSession(authOptions);
   if (!session?.user) {

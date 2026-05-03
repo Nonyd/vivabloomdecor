@@ -6,17 +6,25 @@ import { EnquiryConfirmationEmail } from "@/lib/emails/enquiry-confirmation";
 import { InvoiceEmail } from "@/lib/emails/invoice-email";
 import { TicketEmail } from "@/lib/emails/ticket-email";
 import type { InvoiceLineRow } from "@/lib/invoice-line-items";
+import { getSetting } from "@/lib/settings";
 
-const resendApiKey = process.env.RESEND_API_KEY;
-
-export const resend = resendApiKey ? new Resend(resendApiKey) : null;
-
-export function getAdminNotificationEmail() {
-  return process.env.ADMIN_EMAIL ?? "info@vivabloomdecor.com.au";
+async function getResendClient(): Promise<Resend | null> {
+  const apiKey = await getSetting("resend_api_key");
+  if (!apiKey) return null;
+  return new Resend(apiKey);
 }
 
-const fromEmail =
-  process.env.RESEND_FROM_EMAIL ?? "Vivabloom <hello@vivabloomdecor.com.au>";
+async function getFromHeader(): Promise<string> {
+  const name = (await getSetting("email_from_name")) || "Vivabloom";
+  const addr = (await getSetting("email_from_address")) || "hello@vivabloomdecor.com.au";
+  return `${name} <${addr}>`;
+}
+
+export async function getAdminNotificationEmail(): Promise<string> {
+  const v = await getSetting("admin_notification_email");
+  if (v) return v;
+  return process.env.ADMIN_EMAIL ?? "info@vivabloomdecor.com.au";
+}
 
 export async function sendEnquiryConfirmation(
   to: string,
@@ -24,12 +32,13 @@ export async function sendEnquiryConfirmation(
   eventType: string,
   eventDate?: string
 ) {
+  const resend = await getResendClient();
   if (!resend) return;
   const html = await render(
     EnquiryConfirmationEmail({ name, eventType, eventDate })
   );
   await resend.emails.send({
-    from: fromEmail,
+    from: await getFromHeader(),
     to,
     subject: `We've received your enquiry, ${name} — Vivabloom`,
     html,
@@ -37,6 +46,7 @@ export async function sendEnquiryConfirmation(
 }
 
 export async function sendAdminNotification(enquiry: Enquiry) {
+  const resend = await getResendClient();
   if (!resend) return;
   const html = await render(
     AdminNotificationEmail({
@@ -53,8 +63,8 @@ export async function sendAdminNotification(enquiry: Enquiry) {
     })
   );
   await resend.emails.send({
-    from: fromEmail,
-    to: getAdminNotificationEmail(),
+    from: await getFromHeader(),
+    to: await getAdminNotificationEmail(),
     subject: `New enquiry: ${enquiry.eventType} — ${enquiry.name}`,
     html,
   });
@@ -70,6 +80,7 @@ export async function sendInvoiceEmail(opts: {
   lineItems: InvoiceLineRow[];
   total: number;
 }) {
+  const resend = await getResendClient();
   if (!resend) return;
   const displayName = opts.clientName?.trim() || "there";
   const html = await render(
@@ -83,7 +94,7 @@ export async function sendInvoiceEmail(opts: {
     })
   );
   await resend.emails.send({
-    from: fromEmail,
+    from: await getFromHeader(),
     to: opts.to,
     subject: `Invoice #${opts.invoiceNumber} from Vivabloom`,
     html,
@@ -97,9 +108,10 @@ export async function sendInvoiceEmail(opts: {
 }
 
 export async function sendTestEmail(to: string) {
-  if (!resend) return { ok: false as const, message: "Resend not configured" };
+  const resend = await getResendClient();
+  if (!resend) return { ok: false as const, message: "Resend API key not configured yet" };
   await resend.emails.send({
-    from: fromEmail,
+    from: await getFromHeader(),
     to,
     subject: "Vivabloom — test email",
     html: "<p>This is a test message from your Vivabloom admin settings.</p>",
@@ -114,6 +126,7 @@ export async function sendTicketEmail(opts: {
   tickets: Ticket[];
   order: Order;
 }) {
+  const resend = await getResendClient();
   if (!resend) return;
   const html = await render(
     TicketEmail({
@@ -124,7 +137,7 @@ export async function sendTicketEmail(opts: {
     })
   );
   await resend.emails.send({
-    from: fromEmail,
+    from: await getFromHeader(),
     to: opts.to,
     subject: `Your tickets for ${opts.event.title} — Vivabloom`,
     html,
@@ -132,9 +145,10 @@ export async function sendTicketEmail(opts: {
 }
 
 export async function sendUserInviteEmail(to: string, tempPassword: string) {
+  const resend = await getResendClient();
   if (!resend) return;
   await resend.emails.send({
-    from: fromEmail,
+    from: await getFromHeader(),
     to,
     subject: "Your Vivabloom admin account",
     html: `<p>You've been invited to the Vivabloom admin portal.</p>
